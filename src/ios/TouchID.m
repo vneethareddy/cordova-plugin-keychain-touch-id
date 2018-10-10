@@ -25,6 +25,8 @@
 @implementation TouchID
 
 - (void)isAvailable:(CDVInvokedUrlCommand*)command{
+    NSError *error;
+
     if (NSClassFromString(@"LAContext") == NULL) {
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -33,7 +35,7 @@
     
     self.laContext = [[LAContext alloc] init];
     
-    if ([self.laContext canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil]) {
+    if ([self.laContext canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error]) {
         NSString *biometryType = @"";
         if (@available(iOS 11.0, *)) {
             if (self.laContext.biometryType == LABiometryTypeFaceID) {
@@ -51,7 +53,21 @@
         }
     }
     else {
-        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: @"Touch ID not available"];
+        NSMutableDictionary *touchIdError = [[NSMutableDictionary alloc]init];
+        if (@available(iOS 11.0, *)) {
+            if(error.code == LAErrorBiometryNotEnrolled) {
+                [touchIdError setObject:@YES forKey:@"isHardwareDetected"];
+            }
+        } else {
+            if (error.code == LAErrorTouchIDNotEnrolled) {
+                [touchIdError setObject:@YES forKey:@"isHardwareDetected"];
+            } else if(error.code == LAErrorTouchIDNotAvailable) {
+                [touchIdError setObject:@NO forKey:@"isHardwareDetected"];
+            }
+        }
+        
+        
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:touchIdError];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
 }
