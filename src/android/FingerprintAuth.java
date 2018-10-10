@@ -206,12 +206,12 @@ public class FingerprintAuth extends CordovaPlugin {
                 mCallbackContext.success("YES");
                 mCallbackContext.sendPluginResult(mPluginResult);
             } else {
-                 resultJson.put("isAvailable", isFingerprintAuthAvailable());
-            resultJson.put("isHardwareDetected", mFingerPrintManager.isHardwareDetected());
-            resultJson.put("hasEnrolledFingerprints", mFingerPrintManager.hasEnrolledFingerprints());
-            mPluginResult = new PluginResult(PluginResult.Status.ERROR);
-            mCallbackContext.error(resultJson);
-            mCallbackContext.sendPluginResult(mPluginResult);
+                resultJson.put("isAvailable", isFingerprintAuthAvailable());
+                resultJson.put("isHardwareDetected", mFingerPrintManager.isHardwareDetected());
+                resultJson.put("hasEnrolledFingerprints", mFingerPrintManager.hasEnrolledFingerprints());
+                mPluginResult = new PluginResult(PluginResult.Status.ERROR);
+                mCallbackContext.error(resultJson);
+                mCallbackContext.sendPluginResult(mPluginResult);
             }
             return true;
         } else if (action.equals("setLocale")) {            // Set language
