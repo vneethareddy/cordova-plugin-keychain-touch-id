@@ -1,4 +1,4 @@
-/*
+ /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
  distributed with this work for additional information
@@ -23,6 +23,7 @@
 #import <Cordova/CDV.h>
 
 @implementation TouchID
+NSString *biometryType = @"";
 
 - (void)isAvailable:(CDVInvokedUrlCommand*)command{
     NSError *error;
@@ -36,7 +37,6 @@
     self.laContext = [[LAContext alloc] init];
     
     if ([self.laContext canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error]) {
-        NSString *biometryType = @"";
         if (@available(iOS 11.0, *)) {
             if (self.laContext.biometryType == LABiometryTypeFaceID) {
                 biometryType = @"face";
@@ -56,11 +56,29 @@
         NSMutableDictionary *touchIdError = [[NSMutableDictionary alloc]init];
         if (@available(iOS 11.0, *)) {
             if(error.code == LAErrorBiometryNotEnrolled) {
-                [touchIdError setObject:@YES forKey:@"isHardwareDetected"];
+                if (self.laContext.biometryType == LABiometryTypeFaceID) {
+                    [touchIdError setObject:@"face" forKey:@"biometryType"];
+                    [touchIdError setObject:@YES forKey:@"isHardwareDetected"];
+                }  else if (self.laContext.biometryType == LABiometryTypeTouchID) {
+                    [touchIdError setObject:@"touch" forKey:@"biometryType"];
+                    [touchIdError setObject:@YES forKey:@"isHardwareDetected"];
+                } else{
+                     [touchIdError setObject:@NO forKey:@"isHardwareDetected"];
+                }
             }
         } else {
             if (error.code == LAErrorTouchIDNotEnrolled) {
-                [touchIdError setObject:@YES forKey:@"isHardwareDetected"];
+                if (self.laContext.biometryType == LABiometryTypeFaceID) {
+                    [touchIdError setObject:@"face" forKey:@"biometryType"];
+                    [touchIdError setObject:@YES forKey:@"isHardwareDetected"];
+                }  else if (self.laContext.biometryType == LABiometryTypeTouchID) {
+                    [touchIdError setObject:@"touch" forKey:@"biometryType"];
+                    [touchIdError setObject:@YES forKey:@"isHardwareDetected"];
+                } else{
+                     [touchIdError setObject:@NO forKey:@"isHardwareDetected"];
+                    
+                }
+                
             } else if(error.code == LAErrorTouchIDNotAvailable) {
                 [touchIdError setObject:@NO forKey:@"isHardwareDetected"];
             }
